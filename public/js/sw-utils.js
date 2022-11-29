@@ -40,3 +40,42 @@ function actualizaCacheStatico( staticCache, req, APP_SHELL_INMUTABLE ) {
 
 }
 
+
+// netwotk with cache fallback/update
+
+function manejoApiMensajes(cacheName, req) {
+
+    if (req.clone().method === 'POST') {
+
+        if (self.registration.sync) {
+            return req.clone().text().then(body => {
+
+
+                const bodyObj = JSON.parse(body);
+                returnguardarMensaje(bodyObj);
+
+            });
+        } else {
+            return fetch(req);
+        }
+
+
+    } else {
+
+        return fetch(req).then(res => {
+
+            if (res.ok) {
+                actualizaCacheDinamico(cacheName, req, res.clone());
+                return res.clone();
+            } else {
+                return caches.match(req);
+            }
+
+        }).catch(err => {
+            return caches.match(req);
+        });
+
+    }
+
+
+}
